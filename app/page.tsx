@@ -1,14 +1,6 @@
-import * as React from "react";
-import AppNabar from "./tooldashboard/components/AppNavbar";
-import Section from "./tooldashboard/components/Section";
-import Footer from "./tooldashboard/components/Footer";
+// app/page.tsx
+import { redirect } from "next/navigation";
 
-export default function Mainpage() {
-  return (
-    <div>
-      <AppNabar />
-      <Section />
-      <Footer />
-    </div>
-  );
+export default function Home() {
+  redirect("/login");
 }
