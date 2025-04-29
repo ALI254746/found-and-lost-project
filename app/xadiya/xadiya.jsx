@@ -1,177 +1,147 @@
-// app/xadiya/page.jsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
-  Typography,
   TextField,
-  ToggleButtonGroup,
-  ToggleButton,
   Grid,
   Card,
   CardMedia,
   CardContent,
+  Typography,
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 
-const giftItems = [
-  {
-    id: 1,
-    title: "Sehrli Hayot Kitobi",
-    description: "Motivatsion kitob, qimmatli maslahatlar bilan.",
-    category: "Kitob",
-    dateAdded: "2025-04-26",
-    image: "https://source.unsplash.com/featured/?book",
-    contactInfo: "Email: example@mail.com",
-  },
-  {
-    id: 2,
-    title: "Simli Quloqchinlar",
-    description: "Mushohada uchun ajoyib stereo quloqchin.",
-    category: "Gadget",
-    dateAdded: "2025-04-20",
-    image: "https://source.unsplash.com/featured/?headphones",
-    contactInfo: "Telefon: +998 91 234 56 78",
-  },
-  {
-    id: 3,
-    title: "Yozgi Kuzgi Ko‘ylak",
-    description: "Yengil matodan, yozgi dizaynda ko‘ylak.",
-    category: "Kiyim",
-    dateAdded: "2025-03-30",
-    image: "https://source.unsplash.com/featured/?dress",
-    contactInfo: "Instagram: @fashion_store",
-  },
-  {
-    id: 4,
-    title: "Stol Dekorati",
-    description: "Uy bezagi uchun guldona va shamlar.",
-    category: "Dekor",
-    dateAdded: "2025-04-15",
-    image: "https://source.unsplash.com/featured/?decor",
-    contactInfo: "Email: decor@example.com",
-  },
-];
-
-const categories = ["Barchasi", "Kitob", "Gadget", "Kiyim", "Dekor"];
-const timeFilters = [
-  { value: "all", label: "Barchasi" },
-  { value: "today", label: "Bugun" },
-  { value: "weekly", label: "Hafta" },
-  { value: "monthly", label: "Oy" },
-];
-
-export default function XadiyaPage() {
-  const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState("Barchasi");
-  const [timeFilter, setTimeFilter] = useState("all");
+export default function LostItemsPage() {
+  const [items, setItems] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState("all");
   const [openDialog, setOpenDialog] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  // vaqtga qarab filter
-  const now = new Date();
-  function filterByTime(item) {
-    const d = new Date(item.dateAdded);
-    if (timeFilter === "today") return d.toDateString() === now.toDateString();
-    if (timeFilter === "weekly") {
-      const weekAgo = new Date(now);
-      weekAgo.setDate(now.getDate() - 7);
-      return d >= weekAgo;
-    }
-    if (timeFilter === "monthly") {
-      const monthAgo = new Date(now);
-      monthAgo.setMonth(now.getMonth() - 1);
-      return d >= monthAgo;
-    }
-    return true;
-  }
+  // 🔁 API'dan ma'lumotni olish
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch("/api/ariza?status=Xadiya");
+        const data = await res.json();
 
-  // barcha filtrlash
-  const visibleItems = giftItems
-    .filter((i) => (catFilter === "Barchasi" ? true : i.category === catFilter))
-    .filter(filterByTime)
-    .filter((i) => {
-      const q = search.toLowerCase();
-      return (
-        i.title.toLowerCase().includes(q) ||
-        i.description.toLowerCase().includes(q) ||
-        i.category.toLowerCase().includes(q)
-      );
+        const mappedData = data.map((item) => ({
+          id: item._id,
+          title: item.itemType,
+          description: item.itemDescription,
+          location: item.location,
+          dateLost: item.date,
+          image: item.image?.data?.data
+            ? `data:${item.image.type};base64,${Buffer.from(
+                item.image.data.data
+              ).toString("base64")}`
+            : "/images/placeholder.png", // agar rasm yo‘q bo‘lsa
+          contactInfo: `Telefon: ${item.phone}`,
+        }));
+
+        setItems(mappedData);
+      } catch (error) {
+        console.error("Ma'lumot olishda xatolik:", error);
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  // Vaqt bo‘yicha filtrlash
+  const filterItemsByTime = (items) => {
+    const now = new Date();
+    return items.filter((item) => {
+      const itemDate = new Date(item.dateLost);
+      if (selectedTimeFilter === "today") {
+        return itemDate.toDateString() === now.toDateString();
+      } else if (selectedTimeFilter === "weekly") {
+        const oneWeekAgo = new Date(now);
+        oneWeekAgo.setDate(now.getDate() - 7);
+        return itemDate >= oneWeekAgo;
+      } else if (selectedTimeFilter === "monthly") {
+        const oneMonthAgo = new Date(now);
+        oneMonthAgo.setMonth(now.getMonth() - 1);
+        return itemDate >= oneMonthAgo;
+      } else {
+        return true;
+      }
     });
+  };
 
-  const openDetail = (item) => {
-    setSelected(item);
+  const filteredItems = filterItemsByTime(
+    items.filter((item) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        item.title.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.location.toLowerCase().includes(q)
+      );
+    })
+  );
+
+  const handleTimeFilterChange = (event, newFilter) => {
+    setSelectedTimeFilter(newFilter);
+  };
+
+  const handleDetailOpen = (item) => {
+    setSelectedItem(item);
     setOpenDialog(true);
   };
-  const closeDetail = () => {
+
+  const handleDetailClose = () => {
     setOpenDialog(false);
-    setSelected(null);
+    setSelectedItem(null);
   };
-  const contact = (item) => {
-    alert(`Bog‘lanish uchun:\n${item.contactInfo}`);
+
+  const handleContact = (item) => {
+    alert(`Kontakt ma’lumotlari:\n${item.contactInfo}`);
   };
 
   return (
-    <Container sx={{ py: 5 }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        Xadiya buyumlar
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom textAlign="center">
+        Yo'qolgan buyumlar
       </Typography>
 
-      {/* Qidiruv + Kategoriya + Vaqt filter */}
-      <Box
-        sx={{
-          mb: 4,
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          gap: 2,
-          justifyContent: "center",
-        }}
-      >
+      {/* Qidiruv */}
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "center" }}>
         <TextField
-          placeholder="Qidirish..."
+          label="Qidirish..."
           variant="outlined"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: { xs: "100%", sm: 240 } }}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ width: { xs: "100%", sm: 400 } }}
         />
+      </Box>
 
+      {/* Vaqt bo‘yicha filter */}
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "center" }}>
         <ToggleButtonGroup
-          value={catFilter}
+          value={selectedTimeFilter}
           exclusive
-          onChange={(_, v) => v && setCatFilter(v)}
-          aria-label="category filter"
-        >
-          {categories.map((c) => (
-            <ToggleButton key={c} value={c}>
-              {c}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-
-        <ToggleButtonGroup
-          value={timeFilter}
-          exclusive
-          onChange={(_, v) => v !== null && setTimeFilter(v)}
+          onChange={handleTimeFilterChange}
           aria-label="time filter"
         >
-          {timeFilters.map((f) => (
-            <ToggleButton key={f.value} value={f.value}>
-              {f.label}
-            </ToggleButton>
-          ))}
+          <ToggleButton value="all">Barchasi</ToggleButton>
+          <ToggleButton value="today">Bugun</ToggleButton>
+          <ToggleButton value="weekly">Haftalik</ToggleButton>
+          <ToggleButton value="monthly">Oylik</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
-      {/* Kartalar */}
-      <Grid container spacing={3} justifyContent="center">
-        {visibleItems.map((item) => (
+      {/* Buyumlar ro'yxati */}
+      <Grid container spacing={4} justifyContent="center">
+        {filteredItems.map((item) => (
           <Grid item key={item.id} xs={12} sm={6} md={4} lg={3}>
             <Card
               sx={{
@@ -179,54 +149,56 @@ export default function XadiyaPage() {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                border: "1px solid #FFB74D",
-                "&:hover": { boxShadow: 6 },
+                transition: "transform 0.3s, box-shadow 0.3s",
+                "&:hover": {
+                  transform: "scale(1.03)",
+                  boxShadow: 6,
+                },
+                width: "100%",
+                maxWidth: 345,
               }}
             >
               <CardMedia
                 component="img"
                 image={item.image}
                 alt={item.title}
-                height="180"
+                height="200"
                 sx={{ objectFit: "cover" }}
               />
               <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" gutterBottom color="warning.main">
+                <Typography gutterBottom variant="h6">
                   {item.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  mb={1}
+                  noWrap
+                >
                   {item.description}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  display="block"
-                  color="text.secondary"
-                  mt={1}
-                >
-                  Kategoriya: {item.category}
+                <Typography variant="body2" color="text.secondary" mb={0.5}>
+                  <strong>Joy:</strong> {item.location}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  display="block"
-                  color="text.secondary"
-                >
-                  Qoshilgan: {item.dateAdded}
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Sana:</strong> {item.dateLost}
                 </Typography>
               </CardContent>
+
               <Box sx={{ p: 2, display: "flex", gap: 1 }}>
                 <Button
-                  fullWidth
                   variant="contained"
-                  color="warning"
-                  onClick={() => openDetail(item)}
+                  color="primary"
+                  fullWidth
+                  onClick={() => handleDetailOpen(item)}
                 >
                   Batafsil
                 </Button>
                 <Button
-                  fullWidth
                   variant="outlined"
-                  color="warning"
-                  onClick={() => contact(item)}
+                  color="primary"
+                  fullWidth
+                  onClick={() => handleContact(item)}
                 >
                   Bog‘lanish
                 </Button>
@@ -234,33 +206,44 @@ export default function XadiyaPage() {
             </Card>
           </Grid>
         ))}
-        {visibleItems.length === 0 && (
-          <Typography color="text.secondary" sx={{ mt: 4 }}>
-            Hech nima topilmadi.
+
+        {filteredItems.length === 0 && (
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 4 }}>
+            Hech narsa topilmadi.
           </Typography>
         )}
       </Grid>
 
-      {/* Batafsil Dialog */}
-      <Dialog open={openDialog} onClose={closeDetail}>
-        <DialogTitle>{selected?.title}</DialogTitle>
+      {/* Dialog */}
+      <Dialog open={openDialog} onClose={handleDetailClose}>
+        <DialogTitle>{selectedItem?.title}</DialogTitle>
         <DialogContent>
-          <Box
-            component="img"
-            src={selected?.image}
-            alt={selected?.title}
-            sx={{ width: "100%", height: 200, objectFit: "cover", mb: 2 }}
-          />
-          <DialogContentText>{selected?.description}</DialogContentText>
-          <DialogContentText sx={{ mt: 1 }}>
-            <strong>Kategoriya:</strong> {selected?.category}
-          </DialogContentText>
-          <DialogContentText>
-            <strong>Qoshilgan:</strong> {selected?.dateAdded}
-          </DialogContentText>
+          {selectedItem && (
+            <>
+              <Box
+                component="img"
+                src={selectedItem.image}
+                alt={selectedItem.title}
+                sx={{
+                  width: "100%",
+                  height: 200,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  mb: 2,
+                }}
+              />
+              <DialogContentText>{selectedItem.description}</DialogContentText>
+              <DialogContentText sx={{ mt: 1 }}>
+                <strong>Joy:</strong> {selectedItem.location}
+              </DialogContentText>
+              <DialogContentText>
+                <strong>Sana:</strong> {selectedItem.dateLost}
+              </DialogContentText>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeDetail}>Yopish</Button>
+          <Button onClick={handleDetailClose}>Yopish</Button>
         </DialogActions>
       </Dialog>
     </Container>

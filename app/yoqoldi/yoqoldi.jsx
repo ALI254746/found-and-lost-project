@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -20,51 +20,48 @@ import {
   ToggleButton,
 } from "@mui/material";
 
-const lostItems = [
-  {
-    id: 1,
-    title: "Qora ryukzak",
-    description: "Ichida daftarcha va qalamlar bor edi.",
-    location: "Universitet 2-bino",
-    dateLost: "2025-04-25",
-    image: "/images/backpack.png",
-    contactInfo: "Telefon: +998 90 123 45 67",
-  },
-  {
-    id: 2,
-    title: "Samsung telefon",
-    description: "Qora rang, orqasi yorilgan.",
-    location: "Kutubxona yonida",
-    dateLost: "2025-04-20",
-    image: "/images/phone.png",
-    contactInfo: "Telefon: +998 91 234 56 78",
-  },
-  {
-    id: 3,
-    title: "Kalitlar",
-    description: "3 dona kalit, bitta qora brelok bilan.",
-    location: "Avtobus bekati",
-    dateLost: "2025-04-22",
-    image: "/images/keys.png",
-    contactInfo: "Telefon: +998 93 345 67 89",
-  },
-];
-
 export default function LostItemsPage() {
+  const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("all");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleTimeFilterChange = (event, newFilter) => {
-    setSelectedTimeFilter(newFilter);
-  };
+  // 🔁 API'dan ma'lumotni olish
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch("/api/ariza?status=yoqoldi");
+        const data = await res.json();
 
+        const mappedData = data.map((item) => ({
+          id: item._id,
+          title: item.itemType,
+          description: item.itemDescription,
+          location: item.location,
+          dateLost: item.date,
+          image: item.image?.data?.data
+            ? `data:${item.image.type};base64,${Buffer.from(
+                item.image.data.data
+              ).toString("base64")}`
+            : "/images/placeholder.png", // agar rasm yo‘q bo‘lsa
+          contactInfo: `Telefon: ${item.phone}`,
+        }));
+
+        setItems(mappedData);
+      } catch (error) {
+        console.error("Ma'lumot olishda xatolik:", error);
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  // Vaqt bo‘yicha filtrlash
   const filterItemsByTime = (items) => {
     const now = new Date();
-    const filtered = items.filter((item) => {
+    return items.filter((item) => {
       const itemDate = new Date(item.dateLost);
-
       if (selectedTimeFilter === "today") {
         return itemDate.toDateString() === now.toDateString();
       } else if (selectedTimeFilter === "weekly") {
@@ -76,14 +73,13 @@ export default function LostItemsPage() {
         oneMonthAgo.setMonth(now.getMonth() - 1);
         return itemDate >= oneMonthAgo;
       } else {
-        return true; // no filter (show all)
+        return true;
       }
     });
-    return filtered;
   };
 
   const filteredItems = filterItemsByTime(
-    lostItems.filter((item) => {
+    items.filter((item) => {
       const q = searchQuery.toLowerCase();
       return (
         item.title.toLowerCase().includes(q) ||
@@ -92,6 +88,10 @@ export default function LostItemsPage() {
       );
     })
   );
+
+  const handleTimeFilterChange = (event, newFilter) => {
+    setSelectedTimeFilter(newFilter);
+  };
 
   const handleDetailOpen = (item) => {
     setSelectedItem(item);
@@ -104,7 +104,6 @@ export default function LostItemsPage() {
   };
 
   const handleContact = (item) => {
-    // Bu yerga haqiqiy bog‘lanish jarayonini qo‘shing
     alert(`Kontakt ma’lumotlari:\n${item.contactInfo}`);
   };
 
@@ -125,7 +124,7 @@ export default function LostItemsPage() {
         />
       </Box>
 
-      {/* Vaqt filtri */}
+      {/* Vaqt bo‘yicha filter */}
       <Box sx={{ mb: 3, display: "flex", justifyContent: "center" }}>
         <ToggleButtonGroup
           value={selectedTimeFilter}
@@ -133,21 +132,14 @@ export default function LostItemsPage() {
           onChange={handleTimeFilterChange}
           aria-label="time filter"
         >
-          <ToggleButton value="all" aria-label="all items">
-            Barchasi
-          </ToggleButton>
-          <ToggleButton value="today" aria-label="today">
-            Bugun
-          </ToggleButton>
-          <ToggleButton value="weekly" aria-label="this week">
-            Haftalik
-          </ToggleButton>
-          <ToggleButton value="monthly" aria-label="this month">
-            Oylik
-          </ToggleButton>
+          <ToggleButton value="all">Barchasi</ToggleButton>
+          <ToggleButton value="today">Bugun</ToggleButton>
+          <ToggleButton value="weekly">Haftalik</ToggleButton>
+          <ToggleButton value="monthly">Oylik</ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
+      {/* Buyumlar ro'yxati */}
       <Grid container spacing={4} justifyContent="center">
         {filteredItems.map((item) => (
           <Grid item key={item.id} xs={12} sm={6} md={4} lg={3}>
@@ -198,7 +190,6 @@ export default function LostItemsPage() {
                   variant="contained"
                   color="primary"
                   fullWidth
-                  sx={{ textTransform: "none" }}
                   onClick={() => handleDetailOpen(item)}
                 >
                   Batafsil
@@ -207,7 +198,6 @@ export default function LostItemsPage() {
                   variant="outlined"
                   color="primary"
                   fullWidth
-                  sx={{ textTransform: "none" }}
                   onClick={() => handleContact(item)}
                 >
                   Bog‘lanish
@@ -224,7 +214,7 @@ export default function LostItemsPage() {
         )}
       </Grid>
 
-      {/* Batafsil Dialog */}
+      {/* Dialog */}
       <Dialog open={openDialog} onClose={handleDetailClose}>
         <DialogTitle>{selectedItem?.title}</DialogTitle>
         <DialogContent>

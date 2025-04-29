@@ -1,6 +1,7 @@
 // app/ariza/page.jsx
 "use client";
 
+import { submitAriza } from "@/lib/submitAriza";
 import {
   Container,
   Stepper,
@@ -54,14 +55,20 @@ function LostFoundStepperForm() {
     onSubmit: async (values, { resetForm }) => {
       setLoading(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        enqueueSnackbar("Ariza muvaffaqiyatli yuborildi!", {
-          variant: "success",
-        });
-        resetForm();
-        setActiveStep(0);
-        setSelectedImage(null);
+        const response = await submitAriza(values);
+
+        if (response.ok) {
+          enqueueSnackbar("Ariza muvaffaqiyatli yuborildi!", {
+            variant: "success",
+          });
+          resetForm();
+          setActiveStep(0);
+          setSelectedImage(null);
+        } else {
+          enqueueSnackbar("Xatolik yuz berdi!", { variant: "error" });
+        }
       } catch (error) {
+        console.error("❌ API yuborishda xatolik:", error);
         enqueueSnackbar("Xatolik yuz berdi!", { variant: "error" });
       }
       setLoading(false);
