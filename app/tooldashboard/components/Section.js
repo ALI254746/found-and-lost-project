@@ -35,7 +35,7 @@ const HeroSection = () => {
           Xush kelibsiz! Biz bilan yangiliklarni kashf eting!
         </Typography>
         <Typography variant="h5" sx={{ marginBottom: 3 }}>
-          Saytingizning maqsadi haqida qisqacha ma'lumot.
+          Saytingizning maqsadi haqida qisqacha malumot.
         </Typography>
       </Container>
     </Box>
