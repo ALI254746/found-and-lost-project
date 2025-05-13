@@ -33,7 +33,7 @@
     "app/topilganlar/page.jsx",
     "app/layout.jsx",
     "app/topilganlar/layout.jsx",
-    "app/tooldashboard/components/Section.jsx"
+    "app/tooldashboard/components/Section.js"
   ],
   "exclude": ["node_modules"]
 }

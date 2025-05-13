@@ -19,7 +19,6 @@ import {
 import { usePathname } from "next/navigation";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
-import { styled } from "@mui/material/styles";
 import RedeemIcon from "@mui/icons-material/Redeem"; // yoki: CardGiftcardIcon
 import EqualizerIcon from "@mui/icons-material/Equalizer";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -213,6 +212,19 @@ export default function AppNavbar() {
                   <HomeIcon color="info" />
                 </ListItemIcon>
                 <ListItemText primary="Asosiy sahifa" />
+              </ListItemButton>
+            </ListItem>
+            {/* Aksiya */}
+            <ListItem disablePadding>
+              <ListItemButton
+                component={NextLink}
+                href="/aksiya"
+                selected={pathname === "/aksiya"}
+              >
+                <ListItemIcon>
+                  <HomeIcon color="info" />
+                </ListItemIcon>
+                <ListItemText primary="Aksiya" />
               </ListItemButton>
             </ListItem>
             {/* Ariza qo‘yish */}

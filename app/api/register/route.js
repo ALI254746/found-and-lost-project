@@ -1,6 +1,6 @@
 // app/api/register/route.js
 import { NextResponse } from "next/server";
-import connectToDatabase from "../../../lib/mongoose";
+import connectToDatabase from "../../../lib/mongodb";
 import User from "../../../models/User";
 
 export async function POST(request) {
