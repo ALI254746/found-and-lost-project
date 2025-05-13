@@ -1,7 +1,7 @@
 // app/api/ariza/route.js
-import connectMongo from "@/lib/mongodb";
-import ArizaModel from "@/models/Ariza";
-import { ArizaSchema } from "@/models/Ariza"; // Agar kerak bo'lsa
+import connectMongo from "../../../lib/mongodb";
+
+import ArizaModel from "../../../lib/submitariza";
 
 export async function POST(request) {
   try {
