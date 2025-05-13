@@ -1,6 +1,6 @@
 // app/api/ariza/route.js
 import connectMongo from "../../../lib/mongodb";
-import submitAriza from "../../../lib/submitariza";
+
 import ArizaModel from "../../../lib/submitariza";
 export async function POST(request) {
   try {
