@@ -117,10 +117,10 @@ const CallToAction = () => {
       }}
     >
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
-        Bizning imkoniyatlarimiz haqida ko‘proq bilib oling!
+        Bizning imkoniyatlarimiz haqida koproq bilib oling!
       </Typography>
       <Button variant="contained" color="secondary" size="large">
-        Ma'lumot olish
+        Malumot olish
       </Button>
     </Box>
   );
@@ -147,17 +147,17 @@ const ServiceTabs = () => {
       <Box sx={{ padding: 3 }}>
         {value === 0 && (
           <Typography variant="body1">
-            Xizmat 1 haqida batafsil ma'lumot.
+            Xizmat 1 haqida batafsil malumot.
           </Typography>
         )}
         {value === 1 && (
           <Typography variant="body1">
-            Xizmat 2 haqida batafsil ma'lumot.
+            Xizmat 2 haqida batafsil malumot.
           </Typography>
         )}
         {value === 2 && (
           <Typography variant="body1">
-            Xizmat 3 haqida batafsil ma'lumot.
+            Xizmat 3 haqida batafsil malumot.
           </Typography>
         )}
       </Box>
