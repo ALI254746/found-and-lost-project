@@ -1,7 +1,7 @@
 // app/ariza/page.jsx
 "use client";
 
-import { submitAriza } from "@/lib/submitAriza";
+import { submitAriza } from "../../lib/submitariza";
 import {
   Container,
   Stepper,
