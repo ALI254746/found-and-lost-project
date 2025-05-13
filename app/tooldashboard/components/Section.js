@@ -75,7 +75,7 @@ const ParallaxSection = () => {
 // Testimonials Section
 const Testimonials = () => {
   const reviews = [
-    { name: "Ali", review: "Ajoyib sayt! Ko‘p yordam berdi." },
+    { name: "Ali", review: "Ajoyib sayt! Kop yordam berdi." },
     { name: "Olim", review: "Samarali va foydali resurs." },
     { name: "Gulbahor", review: "Shaxsiylashtirilgan xizmatlar juda yaxshi." },
   ];
@@ -117,7 +117,7 @@ const CallToAction = () => {
       }}
     >
       <Typography variant="h4" sx={{ marginBottom: 2 }}>
-        Bizning imkoniyatlarimiz haqida koproq bilib oling!
+        Bizning imkoniyatlarimiz haqida koproq bilib oling
       </Typography>
       <Button variant="contained" color="secondary" size="large">
         Malumot olish
@@ -170,7 +170,7 @@ const Footer = () => {
   return (
     <Box sx={{ backgroundColor: "#f5f5f5", padding: 4, textAlign: "center" }}>
       <Typography variant="h6">
-        Saytimizdan foydalanganingiz uchun rahmat!
+        Saytimizdan foydalanganingiz uchun rahmat
       </Typography>
       <Button variant="outlined" sx={{ marginTop: 2 }}>
         Bosh sahifaga qaytish
